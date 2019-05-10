@@ -11,58 +11,185 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import android.content.Context;
-import android.hardware.SensorManager;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorEvent;
-import android.hardware.Sensor;
+import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.os.IBinder;
+import android.os.Messenger;
+import android.support.v4.app.FragmentActivity;
 
 public class PTVRemoteInterface extends CordovaPlugin {
-    private SensorManager mSensorManager;
-    private Sensor accelerometer;
     private CallbackContext callbackContext;
     private JSONObject data = new JSONObject();
+
+    // The navigator service messenger, used to send data to the navigator
+    private Messenger foreignService = null;
+
+    // Flag indicating whether we have called bind on the service
+    private boolean bound;
+
+    // the navigator application package
+    static String componentName;
+
+
+    /** Class for interacting with the main interface of the service. */
+    protected ServiceConnection serviceConnection = new ServiceConnection()
+    {
+        public void onServiceConnected(ComponentName className, IBinder service)
+        {
+            // This is called when the connection with the service has been
+            // established, giving us the object we can use to
+            // interact with the service. We are communicating with the
+            // service using a Messenger, so here we get a client-side
+            // representation of that from the raw IBinder object.
+            foreignService = new Messenger(service);
+            bound = true;
+        }
+
+        public void onServiceDisconnected(ComponentName className)
+        {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            foreignService = null;
+            bound = false;
+        }
+    };
+
+
 
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
-
-        mSensorManager = (SensorManager) cordova.getActivity().getSystemService(Context.SENSOR_SERVICE);
-        accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     }
 
     @Override
-    public void onDestroy() {
-        mSensorManager.unregisterListener(listener);
+    protected void onDestroy()
+    {
+        super.onDestroy();
+
+        // unbind from the service
+        if (bound)
+        {
+            getApplicationContext().unbindService(serviceConnection);
+            bound = false;
+        }
+    };
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
     }
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         if ("start".equals(action)) {
-            mSensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI);
+            // binding service
+            connectRemoteInterface();
         } else if ("stop".equals(action)) {
-            mSensorManager.unregisterListener(listener);
-        } else if ("getCurrent".equals(action)) {
-            PluginResult result = new PluginResult(PluginResult.Status.OK, this.data);
-            callbackContext.sendPluginResult(result);
-            return true;
+            disconnectRemoteInterface();
         }
         return false;  // Returning false results in a "MethodNotFound" error.
     }
 
-    private SensorEventListener listener = new SensorEventListener() {
-        public void onSensorChanged(SensorEvent event) {
-            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                data = new JSONObject();
-                try {
-                    data.put("x", event.values[0]);
-                    data.put("y", event.values[1]);
-                    data.put("z", event.values[2]);
-                } catch(JSONException e) {}
+    private void disconnectRemoteInterface() {
+        // unbind from the service
+        if (bound)
+        {
+            getApplicationContext().unbindService(serviceConnection);
+            bound = false;
+        }
+    }
+
+    private void connectRemoteInterface() {
+        if (componentName == null)
+        {
+            // on first start resolve the service we want to bind
+            final String apps[] = getServiceApps();
+
+            if (apps.length == 0)
+            {
+                // no application found that implements the RIService
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.navigator_not_found_title);
+                builder.setMessage(R.string.navigator_not_found_message);
+                AlertDialog dlg = builder.create();
+                dlg.show();
+            }
+            else if (apps.length == 1)
+            {
+                // only one application implements the RIService so take it an bind to it
+                componentName = apps[0];
+
+                bindService();
+            }
+            else
+            {
+                // more than one application implement the RIService so let the user choose which he would like to use
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.choose_navigator_title);
+                builder.setItems(apps, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        componentName = apps[which];
+
+                        bindService();
+
+                        dialog.dismiss();
+                    }
+                });
+
+                AlertDialog dlg = builder.create();
+                dlg.show();
             }
         }
-
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            // unused
+        else
+        {
+            bindService();
         }
-    };
+    }
+
+    private String[] getServiceApps()
+    {
+        PackageManager pm = getApplicationContext().getPackageManager();
+
+        Intent serviceIntent = new Intent("com.ptvag.navigation.RIService");
+        List<ResolveInfo> infos = pm.queryIntentServices(serviceIntent, 0);
+        String apps[] = new String[infos.size()];
+        int i = 0;
+        for(ResolveInfo info : infos)
+        {
+            apps[i] = info.serviceInfo.applicationInfo.packageName;
+            i++;
+        }
+
+        return apps;
+    }
+
+    private void bindService()
+    {
+        Intent intent = new Intent();
+        intent.setClassName(componentName, "com.ptvag.navigation.ri.RIService");
+
+        getApplicationContext().bindService(intent,
+                serviceConnection,
+                Context.BIND_AUTO_CREATE);
+    }
+
+    public Messenger getForeignService()
+    {
+        return foreignService;
+    }
+
+    public boolean isBound()
+    {
+        return bound;
+    }
+
 }
