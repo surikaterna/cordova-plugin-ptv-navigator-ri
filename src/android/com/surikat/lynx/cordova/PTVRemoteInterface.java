@@ -79,18 +79,16 @@ public class PTVRemoteInterface extends CordovaPlugin {
     };
 
     private void emitCallback(String type) {
-        switch (type) {
-            case "connected":
-                if (connectCallbackContext != null) {
-                    PluginResult result = new PluginResult(PluginResult.Status.OK, true);
-                    connectCallbackContext.sendPluginResult(result);
-                }
-                break;
-            case "disconnected":
-                if (disconnectCallbackContext != null) {
-                    PluginResult result = new PluginResult(PluginResult.Status.OK, true);
-                    disconnectCallbackContext.sendPluginResult(result);
-                }
+        if (type.equals("connected")) {
+            if (connectCallbackContext != null) {
+                PluginResult result = new PluginResult(PluginResult.Status.OK, true);
+                connectCallbackContext.sendPluginResult(result);
+            }
+        } else if (type.equals("disconnected")) {
+            if (disconnectCallbackContext != null) {
+                PluginResult result = new PluginResult(PluginResult.Status.OK, true);
+                disconnectCallbackContext.sendPluginResult(result);
+            }
         }
     }
 
@@ -110,34 +108,26 @@ public class PTVRemoteInterface extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         mCallbackContext = callbackContext;
-        switch (action) {
-            case "connect":
-                connectCallbackContext = callbackContext;
-                if (isBound()) {
-                    emitCallback("connected");
-                } else {
-                    connectRemoteInterface();
-                }
-                break;
 
-            case "disconnect":
-                disconnectCallbackContext = callbackContext;
-                disconnectRemoteInterface();
-                break;
-
-            case "getProfile":
-                getProfileCallbackContext = callbackContext;
-                getCurrentProfile();
-                break;
-
-            case "setProfile":
-                setProfileCallbackContext = callbackContext;
-                String profileName = args.getString(0);
-                setCurrentProfile(profileName);
-                break;
-
-            default:
-                return false;  // Returning false results in a "MethodNotFound" error.
+        if (action.equals("connect")) {
+            connectCallbackContext = callbackContext;
+            if (isBound()) {
+                emitCallback("connected");
+            } else {
+                connectRemoteInterface();
+            }
+        } else if (action.equals("disconnect")) {
+            disconnectCallbackContext = callbackContext;
+            disconnectRemoteInterface();
+        } else if (action.equals("getProfile")) {
+            getProfileCallbackContext = callbackContext;
+            getCurrentProfile();
+        } else if (action.equals("setProfile")) {
+            setProfileCallbackContext = callbackContext;
+            String profileName = args.getString(0);
+            setCurrentProfile(profileName);
+        } else {
+            return false;  // Returning false results in a "MethodNotFound" error.
         }
 
         return true;
