@@ -1,29 +1,28 @@
-var DeviceSensorLoader = function(require, exports, module) {
-  var exec = require('cordova/exec');
+  var PTVRemoteInterfaceLoader = function(require, exports, module) {
+    var exec = require('cordova/exec');
+  
+    function PTVRemoteInterface() {}
 
-  var intervalId;
+    PTVRemoteInterface.prototype.connect = function(success, failure, timeOffset) {
+      exec(success, failure, 'PTVRemoteInterface', 'connect', []);
+    };
+  
+    PTVRemoteInterface.prototype.disconnect = function(success, failure) {
+      exec(success, failure, 'PTVRemoteInterface', 'disconnect', []);
+    };
+  
+    PTVRemoteInterface.prototype.getProfile = function(success, failure) {
+      exec(success, failure, 'PTVRemoteInterface', 'getProfile', []);
+    };
 
-  function DeviceSensor() {}
-
-  DeviceSensor.prototype.start = function(success, failure, timeOffset) {
-    exec(success, failure, 'PTVRemoteInterface', 'start', []);
-    intervalId = setInterval(function() {
-      exec(success, failure, 'PTVRemoteInterface', 'getCurrent', []);
-    }, timeOffset || 500);
+    PTVRemoteInterface.prototype.setProfile = function(profileName, success, failure) {
+      exec(success, failure, 'PTVRemoteInterface', 'setProfile', [profileName]);
+    };
+  
+    var pTVRemoteInterface = new PTVRemoteInterface();
+    module.exports = pTVRemoteInterface;
   };
-
-  DeviceSensor.prototype.stop = function(success, failure) {
-    if (intervalId) {
-      clearInterval(intervalId);
-      intervalId = null;
-    }
-    exec(success, failure, 'PTVRemoteInterface', 'stop', []);
-  };
-
-  var deviceSensor = new DeviceSensor();
-  module.exports = deviceSensor;
-};
-
-DeviceSensorLoader(require, exports, module);
-
-cordova.define("cordova/plugin/DeviceSensor", DeviceSensorLoader);
+  
+  PTVRemoteInterfaceLoader(require, exports, module);
+  
+  cordova.define("cordova/plugin/PTVRemoteInterface", PTVRemoteInterfaceLoader);

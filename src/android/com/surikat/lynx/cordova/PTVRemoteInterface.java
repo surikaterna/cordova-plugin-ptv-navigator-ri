@@ -11,12 +11,14 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -28,7 +30,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PTVRemoteInterface extends CordovaPlugin {
-    private CallbackContext callbackContext;
+    private CallbackContext connectCallbackContext;
+    private CallbackContext disconnectCallbackContext;
+    private CallbackContext getProfileCallbackContext;
+    private CallbackContext setProfileCallbackContext;
+    private CallbackContext mCallbackContext;
+
     private JSONObject data = new JSONObject();
 
     // The navigator service messenger, used to send data to the navigator
@@ -43,6 +50,8 @@ public class PTVRemoteInterface extends CordovaPlugin {
     private String currentProfile = "INIT";
     protected Messenger clientMessenger;
 
+    private static final String TAG = "Message";
+
     /** Class for interacting with the main interface of the service. */
     protected ServiceConnection serviceConnection = new ServiceConnection()
     {
@@ -55,6 +64,8 @@ public class PTVRemoteInterface extends CordovaPlugin {
             // representation of that from the raw IBinder object.
             foreignService = new Messenger(service);
             bound = true;
+
+            emitCallback("connected");
         }
 
         public void onServiceDisconnected(ComponentName className)
@@ -63,59 +74,73 @@ public class PTVRemoteInterface extends CordovaPlugin {
             // unexpectedly disconnected -- that is, its process crashed.
             foreignService = null;
             bound = false;
+            emitCallback("disconnected");
         }
     };
 
-
+    private void emitCallback(String type) {
+        switch (type) {
+            case "connected":
+                if (connectCallbackContext != null) {
+                    PluginResult result = new PluginResult(PluginResult.Status.OK, true);
+                    connectCallbackContext.sendPluginResult(result);
+                }
+                break;
+            case "disconnected":
+                if (disconnectCallbackContext != null) {
+                    PluginResult result = new PluginResult(PluginResult.Status.OK, true);
+                    disconnectCallbackContext.sendPluginResult(result);
+                }
+        }
+    }
 
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
-
-        Constants c = new Constants();
-        IncomingHandler ih = new IncomingHandler();
+        setupClientMessenger();
     }
 
-    // @Override
-    // protected void onDestroy()
-    // {
-    //     super.onDestroy();
-
-    //     // unbind from the service
-    //     if (bound)
-    //     {
-    //         getApplicationContext().unbindService(serviceConnection);
-    //         bound = false;
-    //     }
-    // };
-
-    // @Override
-    // protected void onStart()
-    // {
-    //     super.onStart();
-    // }
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        disconnectRemoteInterface();
+    }
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if ("start".equals(action)) {
-            // binding service
-            connectRemoteInterface();
-        } else if ("stop".equals(action)) {
-            disconnectRemoteInterface();
-        } else if ("getProfile".equals(action)) {
-            //
-            getCurrentProfile();
-        } else if ("getCurrent".equals(action)) {
-            // we send back the latest saved data from the event listener to the success callback
-            PluginResult result = new PluginResult(PluginResult.Status.OK, this.currentProfile);
-            callbackContext.sendPluginResult(result);
-            return true;
-        } else if ("test".equals(action)) {
-            PluginResult result = new PluginResult(PluginResult.Status.OK, this.currentProfile);
-            callbackContext.sendPluginResult(result);
-            return true;
+        mCallbackContext = callbackContext;
+        switch (action) {
+            case "connect":
+                connectCallbackContext = callbackContext;
+                if (isBound()) {
+                    emitCallback("connected");
+                } else {
+                    connectRemoteInterface();
+                }
+                break;
+
+            case "disconnect":
+                disconnectCallbackContext = callbackContext;
+                disconnectRemoteInterface();
+                break;
+
+            case "getProfile":
+                getProfileCallbackContext = callbackContext;
+                getCurrentProfile();
+                break;
+
+            case "setProfile":
+                setProfileCallbackContext = callbackContext;
+                String profileName = args.getString(0);
+                setCurrentProfile(profileName);
+                break;
+
+            default:
+                return false;  // Returning false results in a "MethodNotFound" error.
         }
-        return false;  // Returning false results in a "MethodNotFound" error.
+
+        return true;
     }
 
     private void disconnectRemoteInterface() {
@@ -125,10 +150,19 @@ public class PTVRemoteInterface extends CordovaPlugin {
             Context context = this.cordova.getActivity().getApplicationContext();
             context.unbindService(serviceConnection);
             bound = false;
+
+            // reset variable
+            connectCallbackContext = null;
+            disconnectCallbackContext = null;
+            getProfileCallbackContext = null;
+            setProfileCallbackContext = null;
+            mCallbackContext = null;
+        } else {
+            emitCallback("disconnected");
         }
     }
 
-    private void connectRemoteInterface() {
+    private boolean connectRemoteInterface() {
         if (componentName == null)
         {
             // on first start resolve the service we want to bind
@@ -137,18 +171,12 @@ public class PTVRemoteInterface extends CordovaPlugin {
             if (apps.length == 0)
             {
                 // no application found that implements the RIService
-                Context context = this.cordova.getActivity().getApplicationContext();
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle("Not found");
-                builder.setMessage("Nottt founddd");
-                AlertDialog dlg = builder.create();
-                dlg.show();
+                return false;
             }
             else if (apps.length == 1)
             {
                 // only one application implements the RIService so take it an bind to it
                 componentName = apps[0];
-
                 bindService();
             }
             else
@@ -161,13 +189,10 @@ public class PTVRemoteInterface extends CordovaPlugin {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         componentName = apps[which];
-
                         bindService();
-
                         dialog.dismiss();
                     }
                 });
-
                 AlertDialog dlg = builder.create();
                 dlg.show();
             }
@@ -176,16 +201,42 @@ public class PTVRemoteInterface extends CordovaPlugin {
         {
             bindService();
         }
+
+        return true;
     }
 
     protected void getCurrentProfile()
     {
-        if (!isBound())
+        if (!isBound()) {
             return;
+        }
 
         Message msg = Message.obtain(null, Constants.MSG_RI_GET_CURRENT_PROFILE, 0, 0);
         msg.replyTo = getClientMessenger();
 
+        try
+        {
+            getForeignService().send(msg);
+        } catch (RemoteException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    protected void setCurrentProfile(String profileName)
+    {
+        if (!isBound())
+            return;
+
+        Message msg = Message.obtain(null, Constants.MSG_RI_SET_CURRENT_PROFILE, 0, 0);
+        msg.replyTo = getClientMessenger();
+
+        // Create a bundle and set the profile name
+        Bundle bundle = new Bundle();
+        bundle.putString("Profile", profileName);
+        // Add the bundle to the message
+        msg.setData(bundle);
+        // Send the message to the navigator
         try
         {
             getForeignService().send(msg);
@@ -215,8 +266,10 @@ public class PTVRemoteInterface extends CordovaPlugin {
 
     private void bindService()
     {
+        Log.d(TAG, componentName);
+        String serviceName = "com.ptvag.navigation.ri.RIService";
         Intent intent = new Intent();
-        intent.setClassName(componentName, "com.ptvag.navigation.ri.RIService");
+        intent.setClassName(componentName, serviceName);
         Context context = this.cordova.getActivity().getApplicationContext();
         context.bindService(intent,
                 serviceConnection,
@@ -230,37 +283,25 @@ public class PTVRemoteInterface extends CordovaPlugin {
             @Override
             public void handleMessage(Message msg)
             {
-                if(!checkInitialized(msg))
+                if(!checkInitialized(msg)) {
+                    PluginResult result = new PluginResult(PluginResult.Status.ERROR, msg.toString());
+                    mCallbackContext.sendPluginResult(result);
                     return;
-                // for every message we receive, we will put some text in the
-                // textOutput edit field
+                }
                 switch (msg.what)
                 {
-
-                    case Constants.MSG_RI_QUERY_PROFILES:
-                    {
-                        Bundle bundle = msg.getData();
-//                        textOutput.append("Available profiles:\n");
-                        String[] profiles = bundle.getStringArray("Profiles");
-                        if (profiles != null && profiles.length > 0)
-                        {
-                            for (int i=0; i<profiles.length; i++)
-                            {
-//                                textOutput.append(profiles[i] + "\n");
-                            }
-//                            textProfile.setText(profiles[new Random().nextInt(profiles.length)]);
-                        }
-                    }
-                    break;
                     case Constants.MSG_RI_GET_CURRENT_PROFILE:
                     {
                         Bundle bundle = msg.getData();
-//                        textOutput.append("Current profile:\n");
                         String profile = bundle.getString("Profile");
                         if (profile != null)
                         {
-//                            textOutput.append(profile + "\n");
                             currentProfile = profile;
+                            Log.d(TAG, currentProfile);
+                            if (getProfileCallbackContext != null) {
+                                PluginResult result = new PluginResult(PluginResult.Status.OK, currentProfile);
+                                getProfileCallbackContext.sendPluginResult(result);
+                            }
                         }
                     }
                     break;
@@ -268,22 +309,29 @@ public class PTVRemoteInterface extends CordovaPlugin {
                     {
                         Bundle bundle = msg.getData();
                         String profile = bundle.getString("Profile");
-//                        textOutput.append("Setting profile " + profile + ".\n");
+                        Log.d(TAG, "Setting profile " + profile);
+                        PluginResult result;
                         switch (msg.arg1)
                         {
                             case Constants.RI_ERROR_NONE:
-//                                textOutput.append("Profile set successful.\n");
-                                currentProfile = "Profile set successful.\n";
+                                Log.d(TAG, "Profile set successful");
+                                currentProfile = profile;
+                                result = new PluginResult(PluginResult.Status.OK, currentProfile);
                                 break;
-                            case Constants.RI_ERROR_NO_SUCH_PROFILE:
-//                                textOutput.append("No such profile.\n");
-                                currentProfile = "No such profile.\n";
+                            case Constants.RI_ERROR_NO_SUCH_PROFILE: {
+                                String message = "No such profile";
+                                Log.d(TAG, message);
+                                result = new PluginResult(PluginResult.Status.ERROR, message);
                                 break;
-                            default:
-//                                textOutput.append("Error while setting profile.\n");
-                                currentProfile = "Error while setting profile.\n";
+                            }
+                            default: {
+                                String message = "Error while setting profile.";
+                                Log.d(TAG, message);
+                                result = new PluginResult(PluginResult.Status.ERROR, message);
                                 break;
+                            }
                         }
+                        setProfileCallbackContext.sendPluginResult(result);
                     }
                     break;
                     default:
@@ -312,8 +360,7 @@ public class PTVRemoteInterface extends CordovaPlugin {
     {
         if(msg.arg1 == Constants.RI_ERROR_NOT_INITIALIZED)
         {
-            currentProfile = "ERROR: RI not initialized\n";
-//            textOutput.append("ERROR: RI not initialized\n");
+            Log.d(TAG, "ERROR: RI not initialized");
             return false;
         }
         return true;

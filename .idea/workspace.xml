@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="84a73827-f719-4597-8ff5-448f0282909d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/plugin.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/android/com/surikat/lynx/cordova/PTVRemoteInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/android/com/surikat/lynx/cordova/PTVRemoteInterface.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/www/PTVRemoteInterface.js" beforeDir="false" afterPath="$PROJECT_DIR$/www/PTVRemoteInterface.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -38,14 +39,16 @@
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="java" value="612" />
-          <entry key="js" value="24" />
+          <entry key="js" value="25" />
+          <entry key="json" value="2" />
           <entry key="xml" value="254" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="JAVA" value="612" />
-          <entry key="JavaScript" value="24" />
+          <entry key="JSON" value="2" />
+          <entry key="JavaScript" value="25" />
           <entry key="XML" value="254" />
         </counts>
       </usages-collector>
@@ -80,11 +83,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/www/PTVRemoteInterface.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="437">
-              <caret line="23" column="32" lean-forward="true" selection-start-line="23" selection-start-column="32" selection-end-line="23" selection-end-column="32" />
+              <caret line="23" column="4" lean-forward="true" selection-start-line="23" selection-start-column="4" selection-end-line="23" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -92,16 +95,15 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/android/com/surikat/lynx/cordova/PTVRemoteInterface.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="322">
-              <caret line="285" column="25" lean-forward="true" selection-start-line="285" selection-start-column="25" selection-end-line="285" selection-end-column="25" />
+            <state relative-caret-position="361">
+              <caret line="46" column="40" lean-forward="true" selection-start-line="46" selection-start-column="40" selection-end-line="46" selection-end-column="40" />
               <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#9959#9960#0" expanded="true" />
-                <element signature="e#10015#10016#0" expanded="true" />
-                <element signature="e#10063#10064#0" expanded="true" />
-                <element signature="e#10100#10101#0" expanded="true" />
-                <element signature="e#10136#10137#0" expanded="true" />
-                <element signature="e#10164#10165#0" expanded="true" />
+                <element signature="e#12086#12087#0" expanded="true" />
+                <element signature="e#12142#12143#0" expanded="true" />
+                <element signature="e#12190#12191#0" expanded="true" />
+                <element signature="e#12227#12228#0" expanded="true" />
+                <element signature="e#12263#12264#0" expanded="true" />
+                <element signature="e#12291#12292#0" expanded="true" />
                 <element signature="e#10525#10526#0" expanded="true" />
                 <element signature="e#10563#10564#0" expanded="true" />
               </folding>
@@ -109,9 +111,13 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package.json">
-          <provider selected="true" editor-type-id="text-editor" />
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="361">
+              <caret line="19" lean-forward="true" selection-start-line="19" selection-end-line="19" />
+            </state>
+          </provider>
         </entry>
       </file>
     </leaf>
@@ -154,12 +160,13 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/www/sensorManager.js" />
-        <option value="$PROJECT_DIR$/www/PTVRemoteInterface.js" />
         <option value="$PROJECT_DIR$/src/android/com/surikat/lynx/cordova/Constants.java" />
         <option value="$PROJECT_DIR$/src/android/com/surikat/lynx/cordova/IncomingHandler.java" />
         <option value="$PROJECT_DIR$/src/android/com/codingsans/ionic/sensormanager/AndroidSensorManager.java" />
         <option value="$PROJECT_DIR$/plugin.xml" />
         <option value="$PROJECT_DIR$/src/android/com/surikat/lynx/cordova/PTVRemoteInterface.java" />
+        <option value="$PROJECT_DIR$/www/PTVRemoteInterface.js" />
+        <option value="$PROJECT_DIR$/package.json" />
       </list>
     </option>
   </component>
@@ -316,9 +323,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/android/com/codingsans/ionic/sensormanager/AndroidSensorManager.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="703">
@@ -349,16 +353,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/android/com/surikat/lynx/cordova/PTVRemoteInterface.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="322">
-          <caret line="285" column="25" lean-forward="true" selection-start-line="285" selection-start-column="25" selection-end-line="285" selection-end-column="25" />
+        <state relative-caret-position="361">
+          <caret line="46" column="40" lean-forward="true" selection-start-line="46" selection-start-column="40" selection-end-line="46" selection-end-column="40" />
           <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#9959#9960#0" expanded="true" />
-            <element signature="e#10015#10016#0" expanded="true" />
-            <element signature="e#10063#10064#0" expanded="true" />
-            <element signature="e#10100#10101#0" expanded="true" />
-            <element signature="e#10136#10137#0" expanded="true" />
-            <element signature="e#10164#10165#0" expanded="true" />
+            <element signature="e#12086#12087#0" expanded="true" />
+            <element signature="e#12142#12143#0" expanded="true" />
+            <element signature="e#12190#12191#0" expanded="true" />
+            <element signature="e#12227#12228#0" expanded="true" />
+            <element signature="e#12263#12264#0" expanded="true" />
+            <element signature="e#12291#12292#0" expanded="true" />
             <element signature="e#10525#10526#0" expanded="true" />
             <element signature="e#10563#10564#0" expanded="true" />
           </folding>
@@ -368,7 +371,14 @@
     <entry file="file://$PROJECT_DIR$/www/PTVRemoteInterface.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="437">
-          <caret line="23" column="32" lean-forward="true" selection-start-line="23" selection-start-column="32" selection-end-line="23" selection-end-column="32" />
+          <caret line="23" column="4" lean-forward="true" selection-start-line="23" selection-start-column="4" selection-end-line="23" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="361">
+          <caret line="19" lean-forward="true" selection-start-line="19" selection-end-line="19" />
         </state>
       </provider>
     </entry>
