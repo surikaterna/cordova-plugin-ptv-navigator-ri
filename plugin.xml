@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="cordova-plugin-sensor-manager" version="0.0.1">
+    <name>PTVNavigatorInterface</name>
+    <description>Cordova PTV Navigator Remote Interface Plugin</description>
+    <license>MIT</license>
+    <keywords>cordova,PTV</keywords>
+    
+    <js-module name="PTVRemoteInterface" src="www/ptvRemoteInterface.js">
+        <clobbers target="cordova.plugins.ptvRemoteInterface" />
+    </js-module>
+    <engines>
+        <engine name="cordova" version=">=6.3.0" />
+    </engines>
+    <platform name="android">
+        <source-file src="src/android/com/surikat/lynx/cordova/PTVRemoteInterface.java"
+                     target-dir="src/com/surikat/lynx/cordova" />
+
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="PTVRemoteInterface">
+                <param name="android-package" value="com.surikat.lynx.cordova.PTVRemoteInterface" />
+            </feature>
+        </config-file>
+    </platform>
+</plugin>
