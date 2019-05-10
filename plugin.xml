@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="cordova-plugin-sensor-manager" version="0.0.1">
+        id="cordova-plugin-ptv-navigator-ri" version="0.0.1">
     <name>PTVNavigatorInterface</name>
     <description>Cordova PTV Navigator Remote Interface Plugin</description>
     <license>MIT</license>

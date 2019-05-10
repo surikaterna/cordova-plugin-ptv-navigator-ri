@@ -1,4 +1,4 @@
-package com.ptvag.navigation.ritest;
+package com.surikat.lynx.cordova;
 
 import android.os.Handler;
 

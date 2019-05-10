@@ -102,6 +102,8 @@ public class PTVRemoteInterface extends CordovaPlugin {
             PluginResult result = new PluginResult(PluginResult.Status.OK, this.currentProfile);
             callbackContext.sendPluginResult(result);
             return true;
+        } else if ("test".equals(action)) {
+            return this.currentProfile;
         }
         return false;  // Returning false results in a "MethodNotFound" error.
     }
