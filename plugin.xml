@@ -15,7 +15,8 @@
     <platform name="android">
         <source-file src="src/android/com/surikat/lynx/cordova/PTVRemoteInterface.java"
                      target-dir="src/com/surikat/lynx/cordova" />
-
+        <source-file src="src/android/com/surikat/lynx/cordova/Constants.java" target-dir="src/com/surikat/lynx/cordova" />
+        <source-file src="src/android/com/surikat/lynx/cordova/IncomingHandler.java" target-dir="src/com/surikat/lynx/cordova" />
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="PTVRemoteInterface">
                 <param name="android-package" value="com.surikat.lynx.cordova.PTVRemoteInterface" />

@@ -1,5 +1,7 @@
 package com.surikat.lynx.cordova;
 
+import java.util.List;
+
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -11,7 +13,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.Messenger;
+import android.os.Handler;
+import android.os.RemoteException;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -35,8 +40,8 @@ public class PTVRemoteInterface extends CordovaPlugin {
     // the navigator application package
     static String componentName;
 
-    private String currentProfile = 'INIT';
-
+    private String currentProfile = "INIT";
+    protected Messenger clientMessenger;
 
     /** Class for interacting with the main interface of the service. */
     protected ServiceConnection serviceConnection = new ServiceConnection()
@@ -66,26 +71,29 @@ public class PTVRemoteInterface extends CordovaPlugin {
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
+
+        Constants c = new Constants();
+        IncomingHandler ih = new IncomingHandler();
     }
 
-    @Override
-    protected void onDestroy()
-    {
-        super.onDestroy();
+    // @Override
+    // protected void onDestroy()
+    // {
+    //     super.onDestroy();
 
-        // unbind from the service
-        if (bound)
-        {
-            getApplicationContext().unbindService(serviceConnection);
-            bound = false;
-        }
-    };
+    //     // unbind from the service
+    //     if (bound)
+    //     {
+    //         getApplicationContext().unbindService(serviceConnection);
+    //         bound = false;
+    //     }
+    // };
 
-    @Override
-    protected void onStart()
-    {
-        super.onStart();
-    }
+    // @Override
+    // protected void onStart()
+    // {
+    //     super.onStart();
+    // }
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -103,7 +111,9 @@ public class PTVRemoteInterface extends CordovaPlugin {
             callbackContext.sendPluginResult(result);
             return true;
         } else if ("test".equals(action)) {
-            return this.currentProfile;
+            PluginResult result = new PluginResult(PluginResult.Status.OK, this.currentProfile);
+            callbackContext.sendPluginResult(result);
+            return true;
         }
         return false;  // Returning false results in a "MethodNotFound" error.
     }
@@ -112,7 +122,8 @@ public class PTVRemoteInterface extends CordovaPlugin {
         // unbind from the service
         if (bound)
         {
-            getApplicationContext().unbindService(serviceConnection);
+            Context context = this.cordova.getActivity().getApplicationContext();
+            context.unbindService(serviceConnection);
             bound = false;
         }
     }
@@ -126,9 +137,10 @@ public class PTVRemoteInterface extends CordovaPlugin {
             if (apps.length == 0)
             {
                 // no application found that implements the RIService
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(R.string.navigator_not_found_title);
-                builder.setMessage(R.string.navigator_not_found_message);
+                Context context = this.cordova.getActivity().getApplicationContext();
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Not found");
+                builder.setMessage("Nottt founddd");
                 AlertDialog dlg = builder.create();
                 dlg.show();
             }
@@ -142,8 +154,9 @@ public class PTVRemoteInterface extends CordovaPlugin {
             else
             {
                 // more than one application implement the RIService so let the user choose which he would like to use
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(R.string.choose_navigator_title);
+                Context context = this.cordova.getActivity().getApplicationContext();
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Choose navigator title");
                 builder.setItems(apps, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -184,7 +197,8 @@ public class PTVRemoteInterface extends CordovaPlugin {
 
     private String[] getServiceApps()
     {
-        PackageManager pm = getApplicationContext().getPackageManager();
+        Context context = this.cordova.getActivity().getApplicationContext();
+        PackageManager pm = context.getPackageManager();
 
         Intent serviceIntent = new Intent("com.ptvag.navigation.RIService");
         List<ResolveInfo> infos = pm.queryIntentServices(serviceIntent, 0);
@@ -203,8 +217,8 @@ public class PTVRemoteInterface extends CordovaPlugin {
     {
         Intent intent = new Intent();
         intent.setClassName(componentName, "com.ptvag.navigation.ri.RIService");
-
-        getApplicationContext().bindService(intent,
+        Context context = this.cordova.getActivity().getApplicationContext();
+        context.bindService(intent,
                 serviceConnection,
                 Context.BIND_AUTO_CREATE);
     }
