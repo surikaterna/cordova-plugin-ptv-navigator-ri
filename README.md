@@ -1,4 +1,4 @@
-# cordova-ptv-navigator-ri
+# cordova-plugin-ptv-navigator-ri
 Cordova PTV Truck Navigator Remote Interface plugin
 
 Current version 0.1.0
