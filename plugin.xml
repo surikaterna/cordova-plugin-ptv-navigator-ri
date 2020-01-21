@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="cordova-plugin-ptv-navigator-ri" version="0.0.3">
+        id="cordova-plugin-ptv-navigator-ri" version="0.0.4">
     <name>PTVNavigatorInterface</name>
     <description>Cordova PTV Navigator Remote Interface Plugin</description>
     <license>MIT</license>
     <author>Kittipon Chaikittiwanich</author>
     <keywords>cordova,PTV</keywords>
     
-    <js-module name="PTVRemoteInterface" src="www/PtvRemoteInterface.js">
+    <js-module name="PTVRemoteInterface" src="www/PTVRemoteInterface.js">
         <clobbers target="cordova.plugins.ptvRemoteInterface" />
     </js-module>
     <engines>
